@@ -1,4 +1,5 @@
 -- This is the Playbit intro sequence/splash. Use it in your project if you'd like to show that you've used Playbit!
+import("scripts/bounceTest")
 
 module = {}
 playbitIntro = module
@@ -19,7 +20,7 @@ screenH = love.graphics.getHeight()
 
 local startPos = {
   [1] = {10, 10},
-  -- [2] = {screenW - 10, 10},
+  [2] = {screenW - 10, 10},
   -- [3] = {screenW - 10, screenH - 10},
   -- [4] = {10, screenH - 10},
 }
@@ -45,7 +46,7 @@ function module.isComplete()
   return hasPlayedSfx and not startupSfx:isPlaying()
 end
 
-local function getSprite(collisionResponse)
+local function createSprite(collisionResponse)
   local img = playdate.graphics.image.new("textures/playbit-logo-small")
   local spr = playdate.graphics.sprite.new(img)
   -- spr:setImage(img)
@@ -58,23 +59,28 @@ local function getSprite(collisionResponse)
   return spr
 end
 
-function module.init()
 
+local function initSprites()
   for i = 1, #startPos, 1 do
-    -- local spr = getSprite(collisionResponses[i])
-    local spr = getSprite(playdate.graphics.sprite.kCollisionTypeBounce)
+    -- local spr = createSprite(collisionResponses[i])
+    local spr = createSprite(playdate.graphics.sprite.kCollisionTypeBounce)
     spr:moveTo(startPos[i][1], startPos[i][2])
     table.insert(sprites, spr)
   end
 
-  local sprMid = getSprite(playdate.graphics.sprite.kCollisionTypeFreeze)
-  sprMid:moveTo(200, 150)
+  local spriteToCenterTesting = createSprite(playdate.graphics.sprite.kCollisionTypeFreeze)
 
-  startupSfx = playdate.sound.sampleplayer.new("sounds/playbit-startup")
-  hasPlayedSfx = false
+   -- if the default of setCenter(0.5, 0.5)
+   -- the image should be visible in the top left but cut off
+   -- as some of it will be off screen
+  spriteToCenterTesting:moveTo(0, 0)
+
+  local spriteForScaling = createSprite(playdate.graphics.sprite.kCollisionTypeFreeze)
+
+   spriteForScaling:moveTo(200, 120)
+   spriteForScaling:setScale(2)
+  
 end
-
-print("screenW " .. screenW .. " screenH " .. screenH)
 
 local function moveSprite(sprite, dirX, dirY)
   local x, y = sprite:getPosition()
@@ -105,12 +111,8 @@ local function moveSprite(sprite, dirX, dirY)
   return dirX, dirY
 end
 
-function module.update()
-  if not hasPlayedSfx then
-    startupSfx:play()
-    hasPlayedSfx = true
-  end
 
+local function moveSpritesInScene()
   for key, spr in pairs(sprites) do
     local dirX = dirs[key][1]
     local dirY = dirs[key][2]
@@ -130,6 +132,35 @@ function module.update()
     dirs[key][1], dirs[key][2] = dirX, dirY
 
   end
+  
+end
+
+
+
+function module.init()
+
+  -- initSprites()
+
+  bounceTestingLoad()
+
+  startupSfx = playdate.sound.sampleplayer.new("sounds/playbit-startup")
+  hasPlayedSfx = false
+end
+
+-- print("screenW " .. screenW .. " screenH " .. screenH)
+
+
+function module.update()
+  if not hasPlayedSfx then
+    startupSfx:play()
+    hasPlayedSfx = true
+  end
+
+  -- moveSpritesInScene()
+
+  bounceTestingUpdate()
+
+  bounceTestingDraw()
 
   -- playdate.graphics.sprite.draw()
   -- image:draw(0, 0)
